@@ -87,7 +87,9 @@ export function useSubscriptionConverter() {
         { label: 'Nexitally', value: 'https://cdn.jsdelivr.net/gh/SleepyHeeead/subconverter-config@master/remote-config/customized/nexitally.ini' },
         { label: 'SoCloud', value: 'https://cdn.jsdelivr.net/gh/SleepyHeeead/subconverter-config@master/remote-config/customized/socloud.ini' },
         { label: 'ARK', value: 'https://cdn.jsdelivr.net/gh/SleepyHeeead/subconverter-config@master/remote-config/customized/ark.ini' },
-        { label: 'ssrCloud', value: 'https://cdn.jsdelivr.net/gh/SleepyHeeead/subconverter-config@master/remote-config/customized/ssrcloud.ini' }
+        { label: 'ssrCloud', value: 'https://cdn.jsdelivr.net/gh/SleepyHeeead/subconverter-config@master/remote-config/customized/ssrcloud.ini' },
+        { label: 'ACL4SSR(CDN)', value: 'https://cdn.jsdelivr.net/gh/ACL4SSR/ACL4SSR@release/Clash/config/ACL4SSR_Online.ini' },
+        { label: 'ACL4SSR(GitHub)', value: 'https://raw.githubusercontent.com/ACL4SSR/ACL4SSR/master/Clash/config/ACL4SSR_Online.ini' }
       ]
     },
     {
