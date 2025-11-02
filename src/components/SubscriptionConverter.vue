@@ -118,46 +118,70 @@
             <!-- 后端地址 -->
             <div class="mb-6">
               <label class="text-base font-medium text-gray-900 dark:text-white block mb-2">后端地址:</label>
-              <div class="flex gap-2">
-                <input
-                  v-model="form.customBackend"
-                  type="text"
-                  class="flex-1 px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white"
-                  placeholder="动动小手，（建议）自行搭建后端服务。例：http://127.0.0.1:25500/sub?"
-                >
-                <a
-                  href="https://github.com/sub-converter"
-                  target="_blank"
-                  class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 flex items-center"
-                >
-                  <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
-                    <path fill-rule="evenodd" d="M12.293 5.293a1 1 0 011.414 0l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414-1.414L14.586 11H3a1 1 0 110-2h11.586l-2.293-2.293a1 1 0 010-1.414z" clip-rule="evenodd"></path>
-                  </svg>
-                </a>
-              </div>
+              <input
+                v-model="form.customBackend"
+                type="text"
+                class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white"
+                placeholder="动动小手，（建议）自行搭建后端服务。例：http://127.0.0.1:25500/sub?"
+              >
             </div>
 
             <!-- 远程配置 -->
             <div class="mb-6">
               <label class="text-base font-medium text-gray-900 dark:text-white block mb-2">远程配置:</label>
-              <div class="flex gap-2">
-                <select
-                  v-model="form.remoteConfig"
-                  class="flex-1 px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white"
-                >
-                  <option value="">请选择</option>
-                  <optgroup v-for="group in remoteConfigs" :key="group.label" :label="group.label">
-                    <option v-for="item in group.options" :key="item.value" :value="item.value">{{ item.label }}</option>
-                  </optgroup>
-                </select>
-                <button
-                  @click="showUploadDialog = true"
-                  class="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 flex items-center"
-                >
-                  <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
-                    <path fill-rule="evenodd" d="M3 17a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zM6.293 6.707a1 1 0 010-1.414l3-3a1 1 0 011.414 0l3 3a1 1 0 01-1.414 1.414L11 5.414V13a1 1 0 11-2 0V5.414L7.707 6.707a1 1 0 01-1.414 0z" clip-rule="evenodd"></path>
-                  </svg>
-                </button>
+              <div class="space-y-3">
+                <!-- 预设配置选择 -->
+                <div class="flex gap-2">
+                  <select
+                    v-model="form.remoteConfig"
+                    class="flex-1 px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white"
+                  >
+                    <option value="">请选择</option>
+                    <optgroup v-for="group in remoteConfigs" :key="group.label" :label="group.label">
+                      <option v-for="item in group.options" :key="item.value" :value="item.value">{{ item.label }}</option>
+                    </optgroup>
+                  </select>
+                  <button
+                    @click="showUploadDialog = true"
+                    class="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 flex items-center"
+                    title="上传配置"
+                  >
+                    <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                      <path fill-rule="evenodd" d="M3 17a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zM6.293 6.707a1 1 0 010-1.414l3-3a1 1 0 011.414 0l3 3a1 1 0 01-1.414 1.414L11 5.414V13a1 1 0 11-2 0V5.414L7.707 6.707a1 1 0 01-1.414 0z" clip-rule="evenodd"></path>
+                    </svg>
+                  </button>
+                </div>
+                
+                <!-- 自定义URL输入 -->
+                <div class="flex gap-2">
+                  <input
+                    v-model="customRemoteUrl"
+                    type="text"
+                    class="flex-1 px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white"
+                    placeholder="或输入自定义远程配置URL..."
+                    @input="handleCustomRemoteUrl"
+                  >
+                  <button
+                    @click="applyCustomRemoteUrl"
+                    :disabled="!customRemoteUrl.trim()"
+                    class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:bg-gray-400 disabled:cursor-not-allowed focus:outline-none focus:ring-2 focus:ring-blue-500 flex items-center"
+                    title="应用自定义URL"
+                  >
+                    <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                      <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"></path>
+                    </svg>
+                  </button>
+                </div>
+                
+                <!-- 当前配置提示 -->
+                <div v-if="form.remoteConfig" class="text-xs text-gray-500 dark:text-gray-400">
+                  <span class="inline-flex items-center">
+                    <svg class="w-2 h-2 mr-1" fill="currentColor" viewBox="0 0 20 20">
+                      <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"></path>
+                    </svg>
+                    当前配置的远程配置: {{ getRemoteConfigDisplayName(form.remoteConfig) }}
+                  </span>
+                </div>
               </div>
             </div>
 
@@ -311,13 +335,13 @@
                 </span>
               </div>
               <div class="flex flex-col sm:flex-row gap-2">
-                <input
+                <textarea
                   v-model="customSubUrl"
-                  type="text"
                   readonly
-                  class="flex-1 px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-white text-xs lg:text-sm"
+                  rows="3"
+                  class="flex-1 px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-white text-xs lg:text-sm resize-none"
                   placeholder="实时生成订阅链接..."
-                >
+                ></textarea>
                 <button
                   @click="copyToClipboard(customSubUrl)"
                   :disabled="!customSubUrl"
@@ -349,13 +373,13 @@
                 </button>
               </div>
               <div class="flex flex-col sm:flex-row gap-2">
-                <input
+                <textarea
                   v-model="shortSubUrl"
-                  type="text"
                   readonly
-                  class="flex-1 px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-white text-xs lg:text-sm"
+                  rows="3"
+                  class="flex-1 px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-white text-xs lg:text-sm resize-none"
                   placeholder="点击生成短链接..."
-                >
+                ></textarea>
                 <button
                   @click="copyToClipboard(shortSubUrl)"
                   :disabled="!shortSubUrl"
@@ -575,6 +599,7 @@ const showUploadDialog = ref(false)
 const showParseDialog = ref(false)
 const uploadConfig = ref('')
 const loadConfig = ref('')
+const customRemoteUrl = ref('')
 
 // Toast通知
 const toast = ref({
@@ -595,6 +620,55 @@ const getClientName = (value) => {
     }
   }
   return value
+}
+
+// 获取远程配置显示名称
+const getRemoteConfigDisplayName = (url) => {
+  if (!url) return '无'
+  
+  // 检查是否为预设配置
+  for (const group of remoteConfigs.value) {
+    for (const item of group.options) {
+      if (item.value === url) {
+        return item.label
+      }
+    }
+  }
+  
+  // 自定义URL显示域名
+  try {
+    const urlObj = new URL(url)
+    return `${urlObj.hostname} (自定义)`
+  } catch {
+    return '自定义配置'
+  }
+}
+
+// 处理自定义远程配置URL输入
+const handleCustomRemoteUrl = () => {
+  // 当用户输入自定义URL时，清空预设选择
+  if (customRemoteUrl.value.trim()) {
+    form.value.remoteConfig = ''
+  }
+}
+
+// 应用自定义远程配置URL
+const applyCustomRemoteUrl = () => {
+  const url = customRemoteUrl.value.trim()
+  if (!url) {
+    showToast('请输入有效的远程配置URL', 'error')
+    return
+  }
+  
+  // 验证URL格式
+  try {
+    new URL(url)
+    form.value.remoteConfig = url
+    customRemoteUrl.value = ''
+    showToast('自定义远程配置已应用', 'success')
+  } catch (error) {
+    showToast('请输入有效的URL格式', 'error')
+  }
 }
 
 // 实时更新订阅链接
