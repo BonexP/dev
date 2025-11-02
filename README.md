@@ -1,15 +1,146 @@
-# What is this?
+# 订阅链接处理工具
 
-The github.dev web-based editor is a lightweight editing experience that runs entirely in your browser. You can navigate files and source code repositories from GitHub, and make and commit code changes.
+轻量化的在线编码处理工具，支持实时双向绑定和多种编码格式。
 
-There are two ways to go directly to a VS Code environment in your browser and start coding:
+## ✨ 特性
 
-* Press the . key on any repository or pull request.
-* Swap `.com` with `.dev` in the URL. For example, this repo https://github.com/github/dev becomes http://github.dev/github/dev
+- 🎯 **实时双向绑定** - 输入内容变化时，结果自动更新
+- 🔄 **多种编码格式** - Base64编码、URL编码、JSON格式化
+- 🌙 **暗色主题支持** - 保护眼睛的深色模式
+- 💾 **配置持久化** - 本地保存用户偏好设置
+- 📱 **响应式设计** - 完美适配桌面和移动设备
+- ⚡ **轻量高效** - 基于Vue 3 + Vite构建，加载速度快
 
-Preview the gif below to get a quick demo of github.dev in action.
+## 🛠️ 技术栈
 
-![github dev](https://user-images.githubusercontent.com/856858/130119109-4769f2d7-9027-4bc4-a38c-10f297499e8f.gif)
+- **前端框架**: Vue 3 (Composition API)
+- **构建工具**: Vite
+- **样式方案**: Tailwind CSS
+- **编码功能**: 原生JavaScript Web API
+- **存储方案**: localStorage
 
-# Why?
-It’s a quick way to edit and navigate code. It's especially useful if you want to edit multiple files at a time or take advantage of all the powerful code editing features of Visual Studio Code when making a quick change. For more information, see our [documentation](https://github.co/codespaces-editor-help).
+## 🚀 快速开始
+
+### 安装依赖
+```bash
+npm install
+```
+
+### 开发模式
+```bash
+npm run dev
+```
+
+### 构建生产版本
+```bash
+npm run build
+```
+
+### 预览构建结果
+```bash
+npm run preview
+```
+
+### 部署到GitHub Pages
+```bash
+npm run deploy
+```
+
+## 📖 使用说明
+
+### 基本功能
+
+1. **输入文本** - 在输入框中输入要处理的内容
+2. **选择编码类型** - 从下拉菜单中选择编码方式
+3. **查看结果** - 编码结果将实时显示在右侧预览区
+4. **复制结果** - 点击"复制结果"按钮将结果复制到剪贴板
+
+### 支持的编码类型
+
+- **Base64编码/解码** - 将文本转换为Base64格式，适用于URL、Cookie等场景
+- **URL编码/解码** - 将特殊字符编码为%开头的URL安全格式
+- **JSON格式化** - 美化JSON格式，提高可读性
+
+### 配置选项
+
+- **自动复制结果** - 编码完成后自动将结果复制到剪贴板
+- **深色主题** - 切换到深色模式，保护眼睛
+- **默认编码类型** - 设置应用启动时默认选择的编码类型
+- **最大输入长度** - 限制输入文本的最大字符数
+- **自动保存设置** - 配置更改后自动保存到本地存储
+
+## 🏗️ 项目结构
+
+```
+subscription-tool/
+├── public/
+│   ├── index.html           # 主模板
+│   └── favicon.ico         # 网站图标
+├── src/
+│   ├── components/         # Vue组件
+│   │   ├── EncoderForm.vue     # 编码表单
+│   │   ├── ResultPreview.vue   # 结果预览
+│   │   └── ConfigPanel.vue     # 配置面板
+│   ├── composables/        # 组合式函数
+│   │   ├── useEncoder.js       # 编码功能
+│   │   ├── useClipboard.js     # 剪贴板功能
+│   │   └── useStorage.js       # 本地存储
+│   ├── styles/
+│   │   └── main.css        # 全局样式
+│   ├── App.vue            # 主应用组件
+│   └── main.js            # 应用入口
+├── package.json           # 项目配置
+├── vite.config.js         # 构建配置
+├── tailwind.config.js     # Tailwind配置
+└── README.md             # 项目说明
+```
+
+## 🎯 核心功能
+
+### MVVM双向绑定
+- 使用Vue 3的`v-model`指令实现输入框和选择器的双向绑定
+- 输入内容变化时，编码结果自动更新
+- 编码类型变化时，结果自动重新处理
+
+### 实时编码处理
+- 基于计算属性和watcher实现实时编码
+- 支持异步处理和错误处理
+- 提供加载状态和用户反馈
+
+### 本地存储
+- 配置信息持久化保存
+- 支持导入/导出配置
+- 自动备份和恢复功能
+
+## 🌟 特色亮点
+
+### 用户体验
+- 即时反馈：输入变化立即产生结果
+- 优雅交互：现代化的UI设计和动画效果
+- 智能提示：输入验证和错误提示
+
+### 开发体验
+- Vue 3 Composition API：现代化的开发模式
+- 组件化架构：可复用、易维护的代码结构
+- 热更新：Vite提供的快速开发体验
+
+### 性能优化
+- 代码分割：按需加载组件
+- 资源压缩：生产环境自动优化
+- 缓存策略：本地存储减少重复配置
+
+## 📝 许可证
+
+MIT License
+
+## 🤝 贡献
+
+欢迎提交Issue和Pull Request来改进这个项目！
+
+## 📞 联系我们
+
+如有问题或建议，请通过GitHub Issues联系我们。
+
+---
+
+**基于 Vue 3 + Vite + Tailwind CSS 构建，为开发者提供简单高效的编码处理工具。**
