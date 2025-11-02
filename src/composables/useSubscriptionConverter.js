@@ -123,63 +123,117 @@ export function useSubscriptionConverter() {
   const backendVersion = ref('')
 
   /**
-   * 生成订阅链接
+   * 生成订阅链接（增强版）
    */
   const makeUrl = () => {
-    if (!form.value.sourceSubUrl || !form.value.clientType) {
-      throw new Error('订阅链接与客户端为必填项')
+    // 验证必填项
+    if (!form.value.sourceSubUrl?.trim()) {
+      throw new Error('请输入订阅链接')
+    }
+    if (!form.value.clientType) {
+      throw new Error('请选择客户端类型')
     }
 
-    let backend = form.value.customBackend || defaultBackend
-    
-    let sourceSub = form.value.sourceSubUrl
-    sourceSub = sourceSub.replace(/(\n|\r|\n\r)/g, '|')
-
-    let url = backend + 'target=' + form.value.clientType + '&url=' + encodeURIComponent(sourceSub) + '&insert=' + form.value.insert
-
-    // 进阶模式参数
-    if (isAdvanced.value) {
-      if (form.value.remoteConfig) {
-        url += '&config=' + encodeURIComponent(form.value.remoteConfig)
-      }
-      if (form.value.excludeRemarks) {
-        url += '&exclude=' + encodeURIComponent(form.value.excludeRemarks)
-      }
-      if (form.value.includeRemarks) {
-        url += '&include=' + encodeURIComponent(form.value.includeRemarks)
-      }
-      if (form.value.filename) {
-        url += '&filename=' + encodeURIComponent(form.value.filename)
-      }
-      if (form.value.appendType) {
-        url += '&append_type=' + form.value.appendType.toString()
-      }
-
-      url += '&emoji=' + form.value.emoji.toString() + '&list=' + form.value.nodeList.toString() + '&tfo=' + form.value.tfo.toString() + '&scv=' + form.value.scv.toString() + '&fdn=' + form.value.fdn.toString() + '&expand=' + form.value.expand.toString() + '&sort=' + form.value.sort.toString()
-
-      if (needUdp.value) {
-        url += '&udp=' + form.value.udp.toString()
-      }
-
-      if (form.value.tpl.surge.doh === true) {
-        url += '&surge.doh=true'
-      }
-
-      if (form.value.clientType === 'clash') {
-        if (form.value.tpl.clash.doh === true) {
-          url += '&clash.doh=true'
+    try {
+      let backend = form.value.customBackend?.trim() || defaultBackend
+      
+      // 预处理订阅链接
+      let sourceSub = form.value.sourceSubUrl.trim()
+      sourceSub = sourceSub.replace(/(\n|\r|\n\r)/g, '|')
+      
+      // 验证URL格式
+      try {
+        new URL(sourceSub)
+      } catch {
+        // 如果不是完整的URL，尝试作为base64解码
+        if (!sourceSub.startsWith('http')) {
+          try {
+            const decoded = atob(sourceSub)
+            if (decoded.includes('://')) {
+              sourceSub = decoded
+            }
+          } catch (e) {
+            // 如果解码失败，使用原始值
+          }
         }
-        url += '&new_name=' + form.value.new_name.toString()
       }
 
-      // 添加自定义参数
-      customParams.value.filter(param => param.name && param.value).forEach(param => {
-        url += `&${encodeURIComponent(param.name)}=${encodeURIComponent(param.value)}`
-      })
-    }
+      // 构建基础URL
+      let url = `${backend}target=${form.value.clientType}&url=${encodeURIComponent(sourceSub)}&insert=${form.value.insert}`
 
-    customSubUrl.value = url
-    return url
+      // 进阶模式参数处理
+      if (isAdvanced.value) {
+        // 远程配置
+        if (form.value.remoteConfig?.trim()) {
+          url += `&config=${encodeURIComponent(form.value.remoteConfig.trim())}`
+        }
+        
+        // 过滤条件
+        if (form.value.excludeRemarks?.trim()) {
+          url += `&exclude=${encodeURIComponent(form.value.excludeRemarks.trim())}`
+        }
+        if (form.value.includeRemarks?.trim()) {
+          url += `&include=${encodeURIComponent(form.value.includeRemarks.trim())}`
+        }
+        
+        // 文件名
+        if (form.value.filename?.trim()) {
+          url += `&filename=${encodeURIComponent(form.value.filename.trim())}`
+        }
+        
+        // 基础选项
+        if (form.value.appendType) {
+          url += `&append_type=${form.value.appendType.toString()}`
+        }
+
+        // 标准参数组合
+        const standardParams = [
+          `emoji=${form.value.emoji}`,
+          `list=${form.value.nodeList}`,
+          `tfo=${form.value.tfo}`,
+          `scv=${form.value.scv}`,
+          `fdn=${form.value.fdn}`,
+          `expand=${form.value.expand}`,
+          `sort=${form.value.sort}`
+        ]
+        
+        url += '&' + standardParams.join('&')
+
+        // UDP支持检查
+        if (needUdp.value && form.value.udp) {
+          url += `&udp=${form.value.udp.toString()}`
+        }
+
+        // 模板定制功能
+        if (form.value.tpl.surge.doh) {
+          url += '&surge.doh=true'
+        }
+
+        if (form.value.clientType === 'clash') {
+          if (form.value.tpl.clash.doh) {
+            url += '&clash.doh=true'
+          }
+          url += `&new_name=${form.value.new_name}`
+        }
+
+        // 自定义参数处理
+        const validCustomParams = customParams.value.filter(param =>
+          param.name?.trim() && param.value?.trim()
+        )
+        
+        validCustomParams.forEach(param => {
+          url += `&${encodeURIComponent(param.name.trim())}=${encodeURIComponent(param.value.trim())}`
+        })
+      }
+
+      // 更新状态
+      customSubUrl.value = url
+      return url
+      
+    } catch (error) {
+      console.error('生成订阅链接时发生错误:', error)
+      throw new Error('生成订阅链接失败: ' + error.message)
+    }
   }
 
   /**
@@ -232,79 +286,163 @@ export function useSubscriptionConverter() {
   }
 
   /**
-   * 解析订阅链接
+   * 智能解析订阅链接（增强版）
    */
-  const parseSubscriptionUrl = async () => {
-    if (!loadConfig.value.trim()) {
+  const parseSubscriptionUrl = async (inputUrl) => {
+    if (!inputUrl?.trim()) {
       throw new Error('订阅链接不能为空')
     }
 
     loading.value = true
     try {
-      let url = loadConfig.value
-
-      // 检查是否是短链接
-      if (!loadConfig.value.includes('target')) {
+      let url = inputUrl.trim()
+      
+      // 检测并处理不同类型的输入
+      // 1. 短链接处理
+      if (!url.includes('target=') && (url.includes('myurls.cn') || url.includes('bit.ly') || url.length < 100)) {
         try {
-          const response = await fetch(loadConfig.value, {
+          const response = await fetch(url, {
             method: 'GET',
-            redirect: 'follow'
+            redirect: 'follow',
+            headers: {
+              'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8'
+            }
           })
           url = response.url
         } catch (error) {
-          throw new Error('解析短链接失败，请检查短链接服务端是否配置跨域：' + error.message)
+          console.warn('短链接解析失败，尝试作为普通链接处理:', error)
+          // 短链接解析失败时，继续尝试其他解析方式
         }
       }
 
-      const urlObj = new URL(url)
+      // 2. Base64编码检测和解码
+      if (!url.startsWith('http') && url.length > 50) {
+        try {
+          const decoded = atob(url.replace(/\s/g, ''))
+          if (decoded.includes('http') && (decoded.includes('target=') || decoded.includes('://'))) {
+            url = decoded
+          }
+        } catch (e) {
+          // Base64解码失败，继续使用原始输入
+        }
+      }
+
+      // 3. 处理百分号编码
+      if (url.includes('%')) {
+        try {
+          const decoded = decodeURIComponent(url)
+          if (decoded.includes('target=')) {
+            url = decoded
+          }
+        } catch (e) {
+          // URL解码失败
+        }
+      }
+
+      // 4. 验证URL格式
+      let urlObj
+      try {
+        urlObj = new URL(url)
+      } catch (error) {
+        // 如果不是完整URL，尝试补全协议
+        if (!url.startsWith('http')) {
+          url = 'http://' + url
+          urlObj = new URL(url)
+        } else {
+          throw new Error('无效的URL格式')
+        }
+      }
+      
+      // 5. 解析查询参数
+      const params = new URLSearchParams(urlObj.search)
+      
+      // 检查是否包含订阅转换相关参数
+      if (!params.has('target')) {
+        throw new Error('这不是一个有效的订阅转换链接')
+      }
       
       // 设置自定义后端
-      form.value.customBackend = urlObj.origin + urlObj.pathname + '?'
-      
-      // 解析参数
-      const params = new URLSearchParams(urlObj.search)
+      form.value.customBackend = `${urlObj.origin}${urlObj.pathname}?`
       
       // 获取目标客户端
       const target = params.get('target')
       
-      // 设置客户端类型
+      // 设置客户端类型（增强错误处理）
       if (target === 'surge') {
         const ver = params.get('ver') || '4'
-        form.value.clientType = target + '&ver=' + ver
+        form.value.clientType = `surge&ver=${ver}`
       } else {
-        form.value.clientType = target
+        // 验证客户端类型是否有效
+        const validClients = ['clash', 'surge', 'quan', 'quanx', 'mellow', 'surfboard', 'loon', 'singbox', 'ss', 'ssd', 'sssub', 'ssr', 'clashr', 'v2ray', 'trojan']
+        if (validClients.includes(target)) {
+          form.value.clientType = target
+        } else {
+          throw new Error(`不支持的客户端类型: ${target}`)
+        }
       }
 
-      // 设置其他参数
-      form.value.sourceSubUrl = (params.get('url') || '').replace(/\|/g, '\n')
+      // 解析基础参数
+      const urlParam = params.get('url') || ''
+      form.value.sourceSubUrl = urlParam.replace(/\|/g, '\n')
       form.value.insert = params.get('insert') === 'true'
       form.value.remoteConfig = params.get('config') || ''
       form.value.excludeRemarks = params.get('exclude') || ''
       form.value.includeRemarks = params.get('include') || ''
       form.value.filename = params.get('filename') || ''
-      form.value.appendType = params.get('append_type') === 'true'
-      form.value.emoji = params.get('emoji') === 'true'
-      form.value.nodeList = params.get('list') === 'true'
-      form.value.tfo = params.get('tfo') === 'true'
-      form.value.scv = params.get('scv') === 'true'
-      form.value.fdn = params.get('fdn') === 'true'
-      form.value.sort = params.get('sort') === 'true'
-      form.value.udp = params.get('udp') === 'true'
-      form.value.expand = params.get('expand') === 'true'
-      form.value.tpl.surge.doh = params.get('surge.doh') === 'true'
-      form.value.tpl.clash.doh = params.get('clash.doh') === 'true'
-      form.value.new_name = params.get('new_name') === 'true'
+
+      // 解析布尔参数
+      const parseBoolean = (param, defaultValue = false) => {
+        const value = params.get(param)
+        return value === null ? defaultValue : value === 'true'
+      }
+
+      form.value.appendType = parseBoolean('append_type')
+      form.value.emoji = parseBoolean('emoji', true)
+      form.value.nodeList = parseBoolean('list')
+      form.value.tfo = parseBoolean('tfo')
+      form.value.scv = parseBoolean('scv', true)
+      form.value.fdn = parseBoolean('fdn')
+      form.value.sort = parseBoolean('sort')
+      form.value.udp = parseBoolean('udp')
+      form.value.expand = parseBoolean('expand', true)
+      form.value.tpl.surge.doh = parseBoolean('surge.doh')
+      form.value.tpl.clash.doh = parseBoolean('clash.doh')
+      form.value.new_name = parseBoolean('new_name', true)
 
       // 解析自定义参数
-      const excludeParams = new Set(['target', 'url', 'insert', 'config', 'exclude', 'include', 'filename', 'append_type', 'emoji', 'list', 'tfo', 'scv', 'fdn', 'sort', 'udp', 'expand', 'surge.doh', 'clash.doh', 'new_name'])
-      customParams.value = Array.from(params.entries())
+      const excludeParams = new Set([
+        'target', 'url', 'insert', 'config', 'exclude', 'include', 'filename',
+        'append_type', 'emoji', 'list', 'tfo', 'scv', 'fdn', 'sort', 'udp',
+        'expand', 'surge.doh', 'clash.doh', 'new_name'
+      ])
+      
+      const customParamsArray = Array.from(params.entries())
         .filter(([key]) => !excludeParams.has(key))
         .map(([name, value]) => ({ name, value }))
+        .filter(param => param.name && param.value)
 
+      customParams.value = customParamsArray
+
+      // 自动切换到进阶模式（如果检测到高级参数）
+      if (customParamsArray.length > 0 || form.value.remoteConfig) {
+        isAdvanced.value = true
+      }
+
+      // 清理临时变量
       dialogLoadConfigVisible.value = false
+      
+      console.log('订阅链接解析成功', {
+        clientType: form.value.clientType,
+        hasRemoteConfig: !!form.value.remoteConfig,
+        customParamsCount: customParamsArray.length,
+        isAdvanced: isAdvanced.value
+      })
+      
       return true
+      
     } catch (error) {
-      throw new Error('请输入正确的订阅地址!')
+      console.error('解析订阅链接失败:', error)
+      throw new Error(`解析失败: ${error.message}`)
     } finally {
       loading.value = false
     }
