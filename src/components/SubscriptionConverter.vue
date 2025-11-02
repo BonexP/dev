@@ -137,7 +137,7 @@
                     class="flex-1 px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white"
                   >
                     <option value="">请选择</option>
-                    <optgroup v-for="group in remoteConfigs" :key="group.label" :label="group.label">
+                    <optgroup v-for="group in allRemoteConfigs" :key="group.label" :label="group.label">
                       <option v-for="item in group.options" :key="item.value" :value="item.value">{{ item.label }}</option>
                     </optgroup>
                   </select>
@@ -150,6 +150,41 @@
                       <path fill-rule="evenodd" d="M3 17a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zM6.293 6.707a1 1 0 010-1.414l3-3a1 1 0 011.414 0l3 3a1 1 0 01-1.414 1.414L11 5.414V13a1 1 0 11-2 0V5.414L7.707 6.707a1 1 0 01-1.414 0z" clip-rule="evenodd"></path>
                     </svg>
                   </button>
+                </div>
+                
+                <!-- 远程配置URL显示与编辑 -->
+                <div v-if="form.remoteConfig" class="space-y-2">
+                  <label class="text-sm font-medium text-gray-700 dark:text-gray-300 block">
+                    远程配置URL (可临时修改):
+                  </label>
+                  <div class="flex gap-2">
+                    <input
+                      v-model="editableRemoteUrl"
+                      @blur="applyRemoteUrlEdit"
+                      @keyup.enter="applyRemoteUrlEdit"
+                      type="text"
+                      class="flex-1 px-3 py-2 border border-blue-300 dark:border-blue-600 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white text-sm"
+                      placeholder="输入远程配置URL..."
+                    >
+                    <button
+                      @click="resetToPresetUrl"
+                      v-if="editableRemoteUrl !== form.remoteConfig"
+                      class="px-3 py-2 bg-gray-600 text-white rounded-md hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-gray-500 flex items-center text-sm"
+                      title="重置为预设URL"
+                    >
+                      <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                        <path fill-rule="evenodd" d="M4 2a1 1 0 011 1v2.101a7.002 7.002 0 0111.601 2.566 1 1 0 11-1.885.666A5.002 5.002 0 005.999 7H9a1 1 0 010 2H4a1 1 0 01-1-1V3a1 1 0 011-1zm.008 9.057a1 1 0 011.276.61A5.002 5.002 0 0014.001 13H11a1 1 0 110-2h5a1 1 0 011 1v5a1 1 0 11-2 0v-2.101a7.002 7.002 0 01-11.601-2.566 1 1 0 01.61-1.276z" clip-rule="evenodd"></path>
+                      </svg>
+                    </button>
+                  </div>
+                  <div class="text-xs text-blue-600 dark:text-blue-400">
+                    <span class="inline-flex items-center">
+                      <svg class="w-2 h-2 mr-1" fill="currentColor" viewBox="0 0 20 20">
+                        <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd"></path>
+                      </svg>
+                      当前选择: {{ getRemoteConfigDisplayName(form.remoteConfig) }}
+                    </span>
+                  </div>
                 </div>
                 
                 <!-- 自定义URL输入 -->
@@ -171,16 +206,6 @@
                       <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"></path>
                     </svg>
                   </button>
-                </div>
-                
-                <!-- 当前配置提示 -->
-                <div v-if="form.remoteConfig" class="text-xs text-gray-500 dark:text-gray-400">
-                  <span class="inline-flex items-center">
-                    <svg class="w-2 h-2 mr-1" fill="currentColor" viewBox="0 0 20 20">
-                      <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"></path>
-                    </svg>
-                    当前配置的远程配置: {{ getRemoteConfigDisplayName(form.remoteConfig) }}
-                  </span>
                 </div>
               </div>
             </div>
@@ -339,7 +364,7 @@
                   v-model="customSubUrl"
                   readonly
                   rows="3"
-                  class="flex-1 px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-white text-xs lg:text-sm resize-none"
+                  class="flex-1 px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-white text-xs lg:text-sm "
                   placeholder="实时生成订阅链接..."
                 ></textarea>
                 <button
@@ -577,6 +602,7 @@ const {
   customParams,
   clientTypes,
   remoteConfigs,
+  allRemoteConfigs,
   makeUrl,
   makeShortUrl,
   addCustomParam,
@@ -600,6 +626,7 @@ const showParseDialog = ref(false)
 const uploadConfig = ref('')
 const loadConfig = ref('')
 const customRemoteUrl = ref('')
+const editableRemoteUrl = ref('')
 
 // Toast通知
 const toast = ref({
@@ -627,7 +654,7 @@ const getRemoteConfigDisplayName = (url) => {
   if (!url) return '无'
   
   // 检查是否为预设配置
-  for (const group of remoteConfigs.value) {
+  for (const group of allRemoteConfigs.value) {
     for (const item of group.options) {
       if (item.value === url) {
         return item.label
@@ -668,6 +695,36 @@ const applyCustomRemoteUrl = () => {
     showToast('自定义远程配置已应用', 'success')
   } catch (error) {
     showToast('请输入有效的URL格式', 'error')
+  }
+}
+
+// 应用远程配置URL编辑
+const applyRemoteUrlEdit = () => {
+  const url = editableRemoteUrl.value.trim()
+  if (!url) {
+    showToast('URL不能为空', 'error')
+    // 恢复原来的URL
+    editableRemoteUrl.value = form.value.remoteConfig
+    return
+  }
+  
+  // 验证URL格式
+  try {
+    new URL(url)
+    form.value.remoteConfig = url
+    showToast('URL已更新', 'success')
+  } catch (error) {
+    showToast('请输入有效的URL格式', 'error')
+    // 恢复原来的URL
+    editableRemoteUrl.value = form.value.remoteConfig
+  }
+}
+
+// 重置为预设URL
+const resetToPresetUrl = () => {
+  if (form.value.remoteConfig) {
+    editableRemoteUrl.value = form.value.remoteConfig
+    showToast('已重置为预设URL', 'success')
   }
 }
 
@@ -716,6 +773,15 @@ watch([
 ], updateSubscriptionUrl, {
   deep: true,
   immediate: true
+})
+
+// 监听远程配置变化，同步可编辑URL
+watch(() => form.value.remoteConfig, (newConfig) => {
+  if (newConfig) {
+    editableRemoteUrl.value = newConfig
+  } else {
+    editableRemoteUrl.value = ''
+  }
 })
 
 // 显示通知

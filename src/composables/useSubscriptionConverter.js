@@ -122,6 +122,47 @@ export function useSubscriptionConverter() {
   // 后端版本
   const backendVersion = ref('')
 
+  // 自定义远程配置列表
+  const customRemoteConfigs = ref([])
+
+  // 辅助函数：提取URL域名
+  const extractDomainFromUrl = (url) => {
+    try {
+      const urlObj = new URL(url)
+      return urlObj.hostname
+    } catch {
+      return '未知域名'
+    }
+  }
+
+  // 获取自定义远程配置列表
+  const getCustomRemoteConfigs = () => {
+    return customRemoteConfigs.value
+  }
+
+  // 添加自定义远程配置
+  const addCustomRemoteConfig = (config) => {
+    customRemoteConfigs.value.push(config)
+  }
+
+  // 合并所有远程配置（包括预设和自定义）
+  const allRemoteConfigs = computed(() => {
+    const presetConfigs = remoteConfigs.value
+    
+    // 如果有自定义配置，添加到末尾
+    if (customRemoteConfigs.value.length > 0) {
+      return [
+        ...presetConfigs,
+        {
+          label: '自定义配置',
+          options: customRemoteConfigs.value
+        }
+      ]
+    }
+    
+    return presetConfigs
+  })
+
   /**
    * 生成订阅链接（增强版）
    */
@@ -423,6 +464,32 @@ export function useSubscriptionConverter() {
 
       customParams.value = customParamsArray
 
+      // 处理远程配置：检查是否为自定义配置并添加到自定义列表
+      const remoteConfigUrl = form.value.remoteConfig
+      if (remoteConfigUrl) {
+        // 检查是否已经在预设配置中
+        const isPresetConfig = remoteConfigs.value.some(group =>
+          group.options.some(option => option.value === remoteConfigUrl)
+        )
+        
+        // 如果不是预设配置，检查是否已存在于自定义配置中
+        if (!isPresetConfig) {
+          const existingCustomConfig = getCustomRemoteConfigs().find(
+            config => config.value === remoteConfigUrl
+          )
+          
+          // 如果是新的自定义配置，自动添加到自定义配置列表
+          if (!existingCustomConfig) {
+            const newCustomConfig = {
+              label: extractDomainFromUrl(remoteConfigUrl) + ' (自定义)',
+              value: remoteConfigUrl,
+              isCustom: true
+            }
+            addCustomRemoteConfig(newCustomConfig)
+          }
+        }
+      }
+
       // 自动切换到进阶模式（如果检测到高级参数）
       if (customParamsArray.length > 0 || form.value.remoteConfig) {
         isAdvanced.value = true
@@ -552,7 +619,9 @@ export function useSubscriptionConverter() {
     backendVersion,
     clientTypes,
     remoteConfigs,
+    allRemoteConfigs,
     backendOptions,
+    customRemoteConfigs,
     dialogUploadConfigVisible,
     dialogLoadConfigVisible,
     uploadConfig,
@@ -567,6 +636,9 @@ export function useSubscriptionConverter() {
     uploadRemoteConfig,
     clashInstall,
     surgeInstall,
-    resetForm
+    resetForm,
+    extractDomainFromUrl,
+    getCustomRemoteConfigs,
+    addCustomRemoteConfig
   }
 }
