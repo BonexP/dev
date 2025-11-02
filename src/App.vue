@@ -1,15 +1,43 @@
 <template>
   <div class="min-h-screen bg-gray-50 dark:bg-gray-900 transition-colors duration-200">
     <div class="container mx-auto px-4 py-8">
+      <!-- 模式选择 -->
+      <div class="text-center mb-8">
+        <div class="inline-flex rounded-md shadow-sm" role="group">
+          <button
+            @click="currentMode = 'encoder'"
+            :class="[
+              'px-6 py-3 text-sm font-medium rounded-l-lg border border-transparent transition-colors duration-200',
+              currentMode === 'encoder' 
+                ? 'bg-blue-600 text-white border-blue-600' 
+                : 'bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 border-gray-300 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700'
+            ]"
+          >
+            编码工具
+          </button>
+          <button
+            @click="currentMode = 'subscription'"
+            :class="[
+              'px-6 py-3 text-sm font-medium rounded-r-lg border border-transparent transition-colors duration-200',
+              currentMode === 'subscription' 
+                ? 'bg-blue-600 text-white border-blue-600' 
+                : 'bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 border-gray-300 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700'
+            ]"
+          >
+            订阅转换器
+          </button>
+        </div>
+      </div>
+
       <!-- 应用头部 -->
       <header class="text-center mb-8 fade-in">
         <h1 class="text-4xl font-bold text-gray-900 dark:text-white mb-3">
-          订阅链接处理工具
+          {{ currentMode === 'encoder' ? '订阅链接处理工具' : '订阅转换器' }}
         </h1>
         <p class="text-lg text-gray-600 dark:text-gray-400 mb-2">
-          简单、快速、优雅的编码处理工具
+          {{ currentMode === 'encoder' ? '简单、快速、优雅的编码处理工具' : '订阅链接转换与管理工具' }}
         </p>
-        <div class="flex items-center justify-center text-sm text-gray-500 dark:text-gray-400">
+        <div v-if="currentMode === 'encoder'" class="flex items-center justify-center text-sm text-gray-500 dark:text-gray-400">
           <span class="inline-flex items-center">
             <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path>
@@ -33,41 +61,51 @@
         </div>
       </header>
 
-      <!-- 主要内容区 -->
-      <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
-        <!-- 编码表单 - MVVM绑定 -->
-        <div class="fade-in">
-          <EncoderForm
-            v-model:input="inputText"
-            v-model:encoder-type="encoderType"
-            :is-processing="isProcessing"
-          />
+      <!-- 编码工具内容 -->
+      <div v-if="currentMode === 'encoder'">
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
+          <!-- 编码表单 - MVVM绑定 -->
+          <div class="fade-in">
+            <EncoderForm
+              v-model:input="inputText"
+              v-model:encoder-type="encoderType"
+              :is-processing="isProcessing"
+            />
+          </div>
+          
+          <!-- 结果预览 - 自动更新 -->
+          <div class="fade-in">
+            <ResultPreview
+              :result="encodedResult"
+              :error="error"
+              :is-loading="isProcessing"
+              @copy="handleCopy"
+            />
+          </div>
         </div>
-        
-        <!-- 结果预览 - 自动更新 -->
+
+        <!-- 配置面板 -->
         <div class="fade-in">
-          <ResultPreview
-            :result="encodedResult"
-            :error="error"
-            :is-loading="isProcessing"
-            @copy="handleCopy"
+          <ConfigPanel
+            v-model:config="config"
+            @reset="handleReset"
           />
         </div>
       </div>
 
-      <!-- 配置面板 -->
-      <div class="fade-in">
-        <ConfigPanel
-          v-model:config="config"
-          @reset="handleReset"
-        />
+      <!-- 订阅转换器内容 -->
+      <div v-else class="fade-in">
+        <SubscriptionConverter />
       </div>
 
       <!-- 页脚信息 -->
       <footer class="mt-12 text-center text-sm text-gray-500 dark:text-gray-400">
         <p>基于 Vue 3 + Vite + Tailwind CSS 构建</p>
-        <p class="mt-1">
+        <p v-if="currentMode === 'encoder'" class="mt-1">
           支持 Base64 编码、URL 编码、JSON 格式化等常用编码格式
+        </p>
+        <p v-else class="mt-1">
+          支持多种订阅客户端格式转换和高级配置选项
         </p>
       </footer>
     </div>
@@ -91,6 +129,10 @@ import { useStorage } from './composables/useStorage.js'
 import EncoderForm from './components/EncoderForm.vue'
 import ResultPreview from './components/ResultPreview.vue'
 import ConfigPanel from './components/ConfigPanel.vue'
+import SubscriptionConverter from './components/SubscriptionConverter.vue'
+
+// 当前模式
+const currentMode = ref('encoder')
 
 // 响应式数据 - MVVM核心
 const inputText = ref('')
@@ -236,5 +278,45 @@ onMounted(() => {
     opacity: 1;
     transform: translateY(0);
   }
+}
+
+/* 模式切换按钮动画 */
+.mode-button {
+  transition: all 0.2s ease-in-out;
+}
+
+.mode-button:hover {
+  transform: translateY(-1px);
+}
+
+/* 自定义滚动条 */
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: #f1f1f1;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #c1c1c1;
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #a8a8a8;
+}
+
+/* 暗色模式滚动条 */
+.dark ::-webkit-scrollbar-track {
+  background: #374151;
+}
+
+.dark ::-webkit-scrollbar-thumb {
+  background: #6b7280;
+}
+
+.dark ::-webkit-scrollbar-thumb:hover {
+  background: #9ca3af;
 }
 </style>
