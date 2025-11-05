@@ -212,32 +212,46 @@ const toggleTheme = () => {                          <!-- 主题切换逻辑 -->
 
 ## 📚 详细文档
 
-项目包含以下详细文档：
+完整的项目文档已整理到 [doc/](doc/) 目录，包括：
 
-### 🏗️ [架构设计](doc/architecture.md)
-- 项目整体架构设计
-- 组件划分和数据流
-- 技术实现细节
+### 📖 核心文档
+- **[文档索引](doc/README.md)** - 所有文档的导航和快速入口
+- **[架构设计](doc/architecture.md)** - 项目架构、组件划分、数据流设计
+- **[技术栈选择](doc/technology-selection.md)** - 技术决策依据和方案对比
+- **[用户使用指南](doc/user-guide.md)** - 面向最终用户的使用说明
 
-### 🛠️ [技术栈选择](doc/technology-selection.md)  
-- 技术决策依据
-- 方案对比分析
-- 构建配置优化
+### 🔧 实现文档
+- **[订阅转换器实现](doc/subscription-converter-implementation.md)** - 核心功能实现说明
+- **[远程配置增强报告](doc/remote-config-enhancement-report.md)** - 功能增强说明
+
+### 📊 项目报告
+- **[项目总结报告](doc/project-summary.md)** - 完整的项目实施总结
+- **[功能测试报告](doc/functionality-test-report.md)** - 全面的功能测试结果
 
 ## 🚀 部署说明
 
-### GitHub Pages 部署
+### GitHub Pages 部署（推荐）
+
+**自动部署**：推送到 main 分支后自动部署
 ```bash
-# 构建并部署到GitHub Pages
+git push origin main
+```
+
+**手动部署**：
+```bash
 npm run deploy
 ```
 
-### Vercel 部署
-1. 连接GitHub仓库到Vercel
-2. 自动检测Vite项目配置
+**详细说明**：查看 [GitHub Pages 部署指南](doc/github-pages-deployment.md) 了解完整配置和故障排查。
+
+### 其他部署方式
+
+**Vercel 部署**
+1. 连接 GitHub 仓库到 Vercel
+2. 自动检测 Vite 项目配置
 3. 一键部署完成
 
-### 手动部署
+**手动部署**
 1. 运行 `npm run build` 构建项目
 2. 将 `dist/` 目录上传到静态托管服务
 3. 配置服务器路由（指向 `index.html`）
