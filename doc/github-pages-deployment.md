@@ -162,6 +162,18 @@ export default defineConfig({
 }
 ```
 
+### 静态资源配置
+
+项目在 `public/` 目录中包含 `.nojekyll` 文件，用于禁用 GitHub Pages 的 Jekyll 处理：
+
+```
+public/
+├── favicon.svg
+└── .nojekyll  # 告诉 GitHub Pages 不要使用 Jekyll 处理
+```
+
+**说明**：`.nojekyll` 文件确保 GitHub Pages 不会尝试用 Jekyll 处理网站，这对于 Vite 构建的单页应用很重要。
+
 ## 🔍 常见问题
 
 ### 1. 部署后页面显示 404
